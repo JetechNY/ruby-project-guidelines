@@ -155,8 +155,8 @@ class CLI
                             @prompt.keypress("Press any key to return to movie search")
                             self.movie_search
                     end
-                end
             end
+    end
             
     def search_movie_genre
                 userselect = @prompt.select('What movie genre are you looking for?',per_page: 10) do |menu|
@@ -292,7 +292,8 @@ class CLI
             menu.choice 'Change username', 1
             menu.choice 'Change password', 2
             menu.choice 'Delete account', 3
-            menu.choice 'Quit', 4
+            menu.choice 'Return to Main Menu', 4
+            menu.choice 'Quit', 5
         end   
         if user_select == 1
             username = @prompt.ask("Please enter a new username:", required: true)
@@ -307,7 +308,9 @@ class CLI
             @prompt.ask("Are you sure you want to delete your account?")
             #Yes continue, No Exit to user_profile
             @current_user.destroy
-        else user_select == 4
+        elsif user_select == 4
+            self.menu   
+        else user_select == 5
             self.quit    
         end
          

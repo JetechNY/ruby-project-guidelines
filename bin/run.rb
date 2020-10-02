@@ -4,6 +4,6 @@ require_relative '../config/environment'
 
 cli = CLI.new
 # cli.search_movie_genre
-# cli.welcome
+cli.welcome
 binding.pry
 
