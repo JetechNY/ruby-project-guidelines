@@ -8,7 +8,7 @@ class CLI
     def initialize()
         pastel = Pastel.new.white.on_cyan.detach
         @prompt = TTY::Prompt.new(active_color: pastel)
-        # @@user = [] 
+        @current_user = [] 
     end
     
     # def self.user
@@ -39,7 +39,7 @@ class CLI
                 passwordinput = @prompt.mask('Please enter a password:', required: true, active_color: :white)
                 puts "Thank you. Account created. Your username is #{userinput}"
                 sleep(3)
-                username = User.create(username: userinput, password: passwordinput)
+                @current_user = User.create(username: userinput, password: passwordinput)
             else
                 puts "Sorry, that username is already taken."
                 sleep(1)
@@ -92,8 +92,8 @@ class CLI
         system("clear")
         userselect = @prompt.select('Choose an option!') do |menu|     
             menu.choice 'Search for Movie by Title', 3
-            menu.choice 'Search for Movie by Genre', 2
-            menu.choice 'List all for Movies', 1
+            menu.choice 'Recommended Movie by Genre', 2
+            menu.choice 'List all Movies', 1
             menu.choice 'Main Menu', 4
             end
             
@@ -111,7 +111,7 @@ class CLI
     def movie_list
         system('clear')
         puts "---------"
-        userselect = @prompt.select("Choose movie",per_page: 20) do |menu| 
+        userselect = @prompt.select("Choose movie to see more info",per_page: 10) do |menu| 
             Movie.all.each {|movie|menu.choice "#{movie.film}"}
         end
             movie = Movie.find_by_film(userselect)
@@ -123,42 +123,44 @@ class CLI
             puts "Country: #{movie.country}"
             puts "Oscars: #{movie.oscars_won}"
             puts "Actors: #{movie.actors}"
+            puts ""
             @prompt.keypress("Press any key to return to movie search")
             self.movie_search
     end
 
     def search_movie_title
-        search_title = @prompt.ask("What is the name of the movie are you looking for?")
+        system('clear')
+        search_title = @prompt.ask("Please enter the name of the movie are you looking for:")
             if search_title == nil
-                "Please enter a movie title"
+                "---Please enter a movie title---"
                 self.search_movie_title
             else 
-                movies = Movie.all.select {|movie|movie.film == search_title}
-                    if movies == nil # not working!!!!
-                        puts "Sorry movie not found, please try another movie title"
+                movie = Movie.all.select {|movie|movie.film == "#{search_title}"}
+                    if movie == [] # not working!!!!
+                        puts "---Sorry movie not found, please try another movie title---"
                         @prompt.keypress("Press any key to return to movie search")
                         self.movie_search        
                     else            
-                        puts "Your movie details"
-                        puts movies
-                        @prompt.keypress("Press any key to return to movie search")
-                        self.movie_search
+                        puts "---Your movie details---"
+                            movie = Movie.find_by_film(search_title)
+                            puts "Title: #{movie.film}"
+                            puts "Genre: #{movie.genre}"
+                            puts "Director: #{movie.director}"
+                            puts "Release Year: #{movie.release_year}"
+                            puts "IMDB Link: #{movie.imdb_link}"
+                            puts "Country: #{movie.country}"
+                            puts "Oscars: #{movie.oscars_won}"
+                            puts "Actors: #{movie.actors}"
+                            puts ""
+                            @prompt.keypress("Press any key to return to movie search")
+                            self.movie_search
                     end
                 end
             end
-
-            def movie_genre(genre)
-                puts "Movies with your genre"
-                Movie.find_by_genre(genre)
-                sleep(5)
-                @prompt.keypress("Press any key to return")
-                # self.all.select{|movie|movie.genre == genre}
-            end
             
-            def search_movie_genre
+    def search_movie_genre
                 userselect = @prompt.select('What movie genre are you looking for?',per_page: 10) do |menu|
                     menu.enum "."   
-                    
                     menu.choice 'Romance', 1
                     menu.choice 'Crime', 2
                     menu.choice 'Comedy', 3
@@ -168,42 +170,42 @@ class CLI
                     menu.choice 'Horror', 7
                     menu.choice 'Return to main menu', 8
                     menu.choice 'Go to Reviews', 9
-            end
+                end
                 if userselect == 1
+                    system('clear')
                     puts "Your recommended Romance movies"
-                    puts Movie.all.select{|movie|movie.genre == "Romance"}.map{|n|n.film}
-                    @prompt.keypress("Press any key to return to movie search")
-                    self.search_movie_genre        
+                    genrelist=  Movie.all.select{|movie|movie.genre == "Romance"}.map{|n|n.film}
+                    self.get_movie_details(genrelist)
                 elsif userselect == 2
-                    puts "Your recommended Crime movies"
-                    puts Movie.all.select{|movie|movie.genre == "Crime"}.map{|n|n.film}
-                    @prompt.keypress("Press any key to return to movie search")
-                    self.search_movie_genre           
+                    # system('clear')
+                    # puts "Your recommended Crime movies"
+                    # genrelist=  Movie.all.select{|movie|movie.genre == "Crime"}.map{|n|n.film}
+                    # self.get_movie_details(genrelist)       
                 elsif userselect == 3
-                    puts "Your recommended Comedy movies"
-                    puts Movie.all.select{|movie|movie.genre == "Comedy"}.map{|n|n.film}
-                    @prompt.keypress("Press any key to return to movie search")
-                    self.search_movie_genre           
+                    # system('clear')
+                    # puts "Your recommended Comedy movies"
+                    # genrelist= Movie.all.select{|movie|movie.genre == "Comedy"}.map{|n|n.film}
+                    # self.get_movie_details(genrelist)         
                 elsif userselect == 4
-                    puts "Your recommended Action movies"
-                    puts Movie.all.select{|movie|movie.genre == "Action"}.map{|n|n.film}
-                    @prompt.keypress("Press any key to return to movie search")
-                    self.search_movie_genre         
+                    # system('clear')
+                    # puts "Your recommended Action movies"
+                    # genrelist= Movie.all.select{|movie|movie.genre == "Action"}.map{|n|n.film}
+                    # self.get_movie_details(genrelist)
                 elsif userselect == 5 
-                    puts "Your recommended Arthouse and Drama movies"
-                    puts Movie.all.select{|movie|movie.genre == "Arthouse and Drama"}.map{|n|n.film}
-                    @prompt.keypress("Press any key to return to movie search")
-                    self.search_movie_genre   
+                    # system('clear')
+                    # puts "Your recommended Arthouse and Drama movies"
+                    # genrelist=  Movie.all.select{|movie|movie.genre == "Arthouse and Drama"}.map{|n|n.film}
+                    # self.get_movie_details(genrelist)
                 elsif userselect == 6
+                    system('clear')
                     puts "Your recommended Scifi and Fantasy movies"
-                    puts Movie.all.select{|movie|movie.genre == "Scifi"}.map{|n|n.film}
-                    @prompt.keypress("Press any key to return to movie search")
-                    self.search_movie_genre     
+                    genrelist=  Movie.all.select{|movie|movie.genre == "Scifi"}.map{|n|n.film}
+                    self.get_movie_details(genrelist)
                 elsif userselect == 7 
-                    puts "Your recommended Horror movies"
-                    puts Movie.all.select{|movie|movie.genre == "Horror"}.map{|n|n.film}
-                    @prompt.keypress("Press any key to return to movie search")
-                    self.search_movie_genre      
+                    # system('clear')
+                    # puts "Your recommended Horror movies"
+                    # genrelist=  Movie.all.select{|movie|movie.genre == "Horror"}.map{|n|n.film}
+                    # self.get_movie_details(genrelist)     
                 elsif userselect == 8 
                     self.menu
                 else userselect == 9
@@ -212,38 +214,36 @@ class CLI
         
     end
     
+    def get_movie_details(genrelist)
+        movieselect = @prompt.select("Choose movie to see more info",per_page: 20) do |menu| 
+        genrelist.each {|movie|menu.choice "#{movie}" }
+        end
+        puts "---Your movie details---"
+        movie = Movie.find_by_film(movieselect)
+        puts "Title: #{movie.film}"
+        puts "Genre: #{movie.genre}"
+        puts "Director: #{movie.director}"
+        puts "Release Year: #{movie.release_year}"
+        puts "IMDB Link: #{movie.imdb_link}"
+        puts "Country: #{movie.country}"
+        puts "Oscars: #{movie.oscars_won}"
+        puts "Actors: #{movie.actors}"
+        puts ""
+        @prompt.keypress("Press any key to return to movie search")
+        self.movie_search
+    end
 
-    # def get_movie_details(id)
-    #     movie = Movie.all.find {|movie| movie.id == id}
-    #     system "clear"
-    #     ap "----------------------------------------------------------------"
-    #     ap "NAME: #{movie.film}"
-    #     ap "GENRE: #{movie.genre}"
-    #     ap "DIRECTOR: #{movie.director}"
-    #     ap "RELEASE: #{movie.release_year}"
-    #     ap "IMDB: #{movie.imdb_link}" 
-    #     ap "COUNTRY: #{movie.country}"
-    #     ap "OSCAR: #{movie.oscars_won}"
-    #     ap "ACTOR: #{movie.actors}"
-    #     ap "----------------------------------------------------------------"
-    # end
-
-    def movieinfo(movie_id)
-        # puts movie.movie_id info into readable format
-        # asks user if they want to see review info for the movie
+    def moviereview
         user_select = @prompt.select("Would you like to see the review(s) of this movie?") do |menu|
             menu.choice 'Yes', 1
             menu.choice 'No, Back to main menu', 2
         end
-        
         if user_select == 1
             self.review
         else userselect == 2
             self.menu
         end
     end
-
-
 
     def review
         user_select = @prompt.select('Please choose an option') do |menu|        
@@ -265,7 +265,7 @@ class CLI
         end
     end
 
-    def fetch_reviews(user)
+    def fetch_reviews
         revu_inst = Review.where(user_id: user.id)
         if revu_inst == []
             puts "Sorry, you have no reviews. Plase make a review"
@@ -296,14 +296,17 @@ class CLI
         end   
         if user_select == 1
             username = @prompt.ask("Please enter a new username:", required: true)
-            User.update(username: username) #currently makes all Users change!!!! 
+            @current_user.username = username
+            @current_user.save
+                #currently makes all Users change!!!! 
         elsif user_select == 2
             password = @prompt.mask('Please enter a new password:', required: true)  
-            self.update(password: password) #currently makes all Users change!!!!      
+            @current_user.password = password
+            @current_user.save     
         elsif user_select ==3
             @prompt.ask("Are you sure you want to delete your account?")
             #Yes continue, No Exit to user_profile
-            self.destroy
+            @current_user.destroy
         else user_select == 4
             self.quit    
         end
@@ -313,10 +316,8 @@ class CLI
 
     def quit
     puts "Thank you for using Movie Review Express!"
-    puts "by Shevaughn & SunJet"
-        sleep(1)
+    puts "by SunJet Liu"
     puts "Goodbye"
-        sleep(1)
         exit
     end
 
